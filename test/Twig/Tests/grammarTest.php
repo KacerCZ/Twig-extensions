@@ -18,12 +18,13 @@ class grammarTest extends PHPUnit_Framework_TestCase
      */
     public function testGrammar($tag, $grammar, $template, $output, $exception)
     {
-        $twig = new Twig_Environment(new Twig_Loader_String(), array('cache' => false));
+        $twig = new Twig_Environment(new Twig_Loader_Array(array('template' => $template)), array('cache' => false, 'autoescape' => false, 'debug' => true));
+        $twig->addExtension(new Twig_Extension_Debug());
         $twig->addTokenParser(new SimpleTokenParser($tag, $grammar));
 
         $ok = true;
         try {
-            $template = $twig->loadTemplate($template);
+            $template = $twig->loadTemplate('template');
         } catch (Exception $e) {
             $ok = false;
 
@@ -54,7 +55,7 @@ class grammarTest extends PHPUnit_Framework_TestCase
             array('foo5', '<foo:expression>', '{% foo5 1 + 2 %}', '|3|', false),
             array('foo6', '<foo:array>', '{% foo6 1 + 2 %}', '|3|', 'Twig_Error_Syntax'),
             array('foo7', '<foo>', '{% foo7 %}', '|3|', 'Twig_Error_Syntax'),
-            array('foo8', '<foo:array>', '{% foo8 [1, 2] %}', '|Array|', false),
+            array('foo8', '<foo:array>', '{% foo8 [1, 2] %}', "|int(0)\nint(1)\nint(1)\nint(2)\n|", false),
             array('foo9', '<foo> with <bar>', '{% foo9 "bar" with "foobar" %}', '|bar|with|foobar|', false),
             array('foo10', '<foo> [with <bar>]', '{% foo10 "bar" with "foobar" %}', '|bar|with|foobar|', false),
             array('foo11', '<foo> [with <bar>]', '{% foo11 "bar" %}', '|bar|', false),
